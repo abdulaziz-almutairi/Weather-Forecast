@@ -43,8 +43,8 @@ src/
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/abdulaziz-almutairi/weather-app.git
-cd weather-app
+git clone https://github.com/abdulaziz-almutairi/Weather-Forecast.git
+cd Weather-Forecast/
 ```
 
 2. **Install dependencies**
