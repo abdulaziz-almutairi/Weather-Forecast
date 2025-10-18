@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import type { WeatherData, ForecastData } from "./types/weather";
+import { fetchWeather, fetchForecast } from "./utils/weatherApi";
+import SearchForm from "./components/SearchForm";
+import WeatherSummary from "./components/WeatherSummary";
+import ForecastList from "./components/ForecastList";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => {
+  const [search, setSearch] = useState("");
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [forecast, setForecast] = useState<ForecastData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSearch = async (city: string) => {
+    try {
+      setError(null);
+      const w = await fetchWeather(city);
+      setWeather(w);
+      const f = await fetchForecast(city);
+      setForecast(f);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
+    }
+  };
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(() => {
+      handleSearch("Riyadh");
+    });
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <main className="min-h-screen bg-gradient-to-br from-blue-200 to-slate-300 flex items-center justify-center p-4">
+      <div className="p-8 rounded-xl bg-white/30 backdrop-blur-md border border-white/40 shadow-xl text-center w-full max-w-md space-y-6">
+        <h1 className="text-4xl font-black text-gray-800">Weather Forecast</h1>
+        <SearchForm
+          value={search}
+          onChange={setSearch}
+          onSubmit={() => handleSearch(search)}
+        />
+        {error && <p className="text-red-600">{error}</p>}
+        {weather && <WeatherSummary data={weather} />}
+        {forecast && <ForecastList days={forecast.list} />}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    </main>
+  );
+};
 
-export default App
+export default App;
